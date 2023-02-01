@@ -104,7 +104,7 @@ function newebpay_link($params)
         'RespondType' => 'JSON',
         'TimeStamp' => time(),
         'Version' => '1.5',
-        'MerchantOrderNo' => $invoiceId+date("is"), //訂單編號+時間 避免重複
+        'MerchantOrderNo' => $invoiceId . date('is'), //訂單編號+時間 避免重複
         'Amt' => $amount['0'],
         'ItemDesc' => $description,
         'ReturnURL' => $returnUrl,
