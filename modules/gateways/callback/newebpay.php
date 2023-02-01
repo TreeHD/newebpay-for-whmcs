@@ -24,27 +24,29 @@ $hashIV = $gatewayParams['hashIV'];
 //獲取回傳的參數
 $status = $_REQUEST["Status"];
 $resultMerchantID = $_REQUEST["MerchantID"];
-$tradeInfo = json_decode(create_aes_decrypt($_REQUEST["TradeInfo"], $hashKey, $hashIV),true);
+$tradeInfo = json_decode(create_aes_decrypt($_REQUEST["TradeInfo"], $hashKey, $hashIV), true);
 $transData = $tradeInfo['Result'];
 
 //解密回傳的AES數據
-function create_aes_decrypt($tradeInfo, $hashKey, $hashIV) {
-    return strippadding(openssl_decrypt(hex2bin($tradeInfo),'AES-256-CBC', $hashKey, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $hashIV)); 
+function create_aes_decrypt($tradeInfo, $hashKey, $hashIV)
+{
+    return strippadding(openssl_decrypt(hex2bin($tradeInfo), 'AES-256-CBC', $hashKey, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $hashIV));
 }
-function strippadding($string) {
+function strippadding($string)
+{
     $slast = ord(substr($string, -1));
     $slastc = chr($slast);
     $pcheck = substr($string, -$slast);
     if (preg_match("/$slastc{" . $slast . "}/", $string)) {
         $string = substr($string, 0, strlen($string) - $slast);
-        return $string; 
+        return $string;
     } else {
-        return false; 
+        return false;
     }
 }
 
 //檢查帳單編號
-$invoiceId = checkCbInvoiceID($transData['MerchantOrderNo'], $gatewayParams['name']);
+$invoiceId = checkCbInvoiceID(substr($transData['MerchantOrderNo'], 0, -4), $gatewayParams['name']);
 
 //檢查是否已有相同的交易編號
 checkCbTransID($transData['TradeNo']);

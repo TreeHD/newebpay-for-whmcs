@@ -67,7 +67,7 @@ function newebpay_link($params)
     $invoiceId = $params['invoiceid'];
     $description = $params["description"];
     //由於支付接口不支援小數金額，因此取整數金額。
-    $amount = explode('.',$params['amount']);
+    $amount = explode('.', $params['amount']);
 
     // 客戶參數
     $firstname = $params['clientdetails']['firstname'];
@@ -91,7 +91,7 @@ function newebpay_link($params)
     $whmcsVersion = $params['whmcsVersion'];
 
     //是否為測試模式
-    if($testMode == true) {
+    if ($testMode == true) {
         $url = 'https://ccore.newebpay.com/MPG/mpg_gateway';
     } else {
         $url = 'https://core.newebpay.com/MPG/mpg_gateway';
@@ -104,15 +104,15 @@ function newebpay_link($params)
         'RespondType' => 'JSON',
         'TimeStamp' => time(),
         'Version' => '1.5',
-        'MerchantOrderNo' => $invoiceId,
+        'MerchantOrderNo' => $invoiceId+date("is"), //訂單編號+時間 避免重複
         'Amt' => $amount['0'],
         'ItemDesc' => $description,
         'ReturnURL' => $returnUrl,
-        'NotifyURL' => $systemUrl .'modules/gateways/callback/newebpay.php',
+        'NotifyURL' => $systemUrl . 'modules/gateways/callback/newebpay.php',
         'ClientBackURL' => $returnUrl,
         'Email' => $email,
         'EmailModify' => '0',
-        'LoginType' => '0'
+        'LoginType' => '0',
     );
     $aesData = getAES($postfields, $hashKey, $hashIV);
     $sha256Data = aes_sha256_str($aesData, $hashKey, $hashIV);
@@ -137,24 +137,24 @@ function newebpay_link($params)
 }
 
 //AES 加密
-function getAES($postData, $hashKey, $hashIV) 
-{ 
+function getAES($postData, $hashKey, $hashIV)
+{
     $return_str = '';
     if (!empty($postData)) {
         //將參數經過 URL ENCODED QUERY STRING
-        $return_str = http_build_query($postData); 
+        $return_str = http_build_query($postData);
     }
-    return trim(bin2hex(openssl_encrypt(addpadding($return_str), 'aes-256-cbc', $hashKey, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $hashIV)));
+    return trim(bin2hex(openssl_encrypt(addpadding($return_str), 'aes-256-cbc', $hashKey, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $hashIV)));
 }
-function addpadding($string, $blocksize = 32) 
+function addpadding($string, $blocksize = 32)
 {
     $len = strlen($string);
-    $pad = $blocksize - ($len % $blocksize); 
-    $string .= str_repeat(chr($pad), $pad); 
+    $pad = $blocksize - ($len % $blocksize);
+    $string .= str_repeat(chr($pad), $pad);
     return $string;
 }
 //SHA256 加密
 function aes_sha256_str($aesData, $hashKey, $hashIV)
 {
-    return strtoupper(hash("sha256", 'HashKey='.$hashKey.'&'.$aesData.'&HashIV='.$hashIV));
+    return strtoupper(hash("sha256", 'HashKey=' . $hashKey . '&' . $aesData . '&HashIV=' . $hashIV));
 }
